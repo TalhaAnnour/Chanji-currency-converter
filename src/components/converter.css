@@ -185,3 +185,14 @@ body {
     font-size: 20px;
   }
 }
+.refresh-btn {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}

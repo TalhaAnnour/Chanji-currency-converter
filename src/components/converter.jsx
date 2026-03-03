@@ -8,19 +8,32 @@ export default function Converter() {
   const [from, setFrom] = useState("USD");
   const [to, setTo] = useState("NGN");
   const [result, setResult] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const [dark, setDark] = useState(true);
 
+  /* Fetch rates */
+  const fetchRates = async () => {
+    try {
+      const data = await getRates(from);
+      setRates(data.rates);
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error("Failed to fetch rates", error);
+    }
+  };
+
+  /* Auto refresh every 30 seconds */
   useEffect(() => {
     fetchRates();
-    const interval = setInterval(fetchRates, 60000);
+
+    const interval = setInterval(() => {
+      fetchRates();
+    }, 30000); // 30 seconds
+
     return () => clearInterval(interval);
   }, [from]);
 
-  const fetchRates = async () => {
-    const data = await getRates(from);
-    setRates(data.rates);
-  };
-
+  /* Convert currency */
   useEffect(() => {
     if (rates[to]) {
       setResult((amount * rates[to]).toFixed(2));
@@ -29,9 +42,8 @@ export default function Converter() {
 
   /* Swap currencies */
   const swapCurrencies = () => {
-    const temp = from;
     setFrom(to);
-    setTo(temp);
+    setTo(from);
   };
 
   /* Toggle theme */
@@ -44,15 +56,14 @@ export default function Converter() {
     <div className="converter">
       <div className="live-indicator">
         <span className="live-dot"></span>
-        Live
+        Auto updating
       </div>
 
       <button className="theme-toggle" onClick={toggleTheme}>
         {dark ? "Light" : "Dark"}
       </button>
-    
-    <h1>Chanji</h1>
-      <h2>Currency Converter</h2>
+
+      <h1>Currency Converter</h1>
 
       <input
         type="number"
@@ -76,20 +87,23 @@ export default function Converter() {
             <option key={cur}>{cur}</option>
           ))}
         </select>
-
-        <div className="currency-picker">
-          <button className="picker-btn">
-            <img
-              src={`https://flagcdn.com/24x18/${from.slice(0, 2).toLowerCase()}.png`}
-            />
-            {from}
-          </button>
-        </div>
       </div>
 
       <h2>
         {amount} {from} = {result} {to}
       </h2>
+
+      {/* Last updated */}
+      {lastUpdated && (
+        <p className="updated-time">
+          Last updated: {lastUpdated.toLocaleTimeString()}
+        </p>
+      )}
+
+      {/* Manual refresh */}
+      <button className="refresh-btn" onClick={fetchRates}>
+        Refresh now
+      </button>
     </div>
   );
 }
